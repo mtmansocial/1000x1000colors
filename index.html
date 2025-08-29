@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mřížka s okrajem a orámováním</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      user-select: none;
+      overflow: auto;
+    }
+    #canvas {
+      border: 1px solid #333;
+      cursor: crosshair;
+      display: block;
+      image-rendering: pixelated;
+    }
+    #tooltip {
+      position: absolute;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      pointer-events: none;
+      font-size: 12px;
+      font-weight: bold;
+      white-space: nowrap;
+      z-index: 1000;
+      display: none;
+    }
+    #colorPalette {
+  position: absolute;
+  display: none; /* výchozí stav */
+  z-index: 1001;
+  background: white;
+  border: 1px solid #999;
+  padding: 5px 30px 5px 5px; /* pokud chceš zachovat prostor pro křížek */
+  border-radius: 5px;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+
+  display: grid; /* grid layout */
+  grid-template-columns: repeat(12, 30px); /* 12 sloupců, každý 30px široký */
+  gap: 1px; /* mezery mezi tlačítky */
+  align-items: center;
+  width: max-content; /* šířka dle obsahu */
+}
+    #colorPalette button {
+      width: 24px;
+      height: 24px;
+      border: none;
+      margin: 2px;
+      cursor: pointer;
+      border-radius: 3px;
+    }
+    #closePalette {
+      position: absolute;
+      top: 3px;
+      right: 6px;
+      font-weight: bold;
+      color: #666;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    #closePalette:hover {
+      color: #000;
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="canvas" width="10140" height="10140"></canvas>
+<div id="tooltip"></div>
+
+<div id="colorPalette">
+
+  <span id="closePalette" title="Zavřít">×</span>
+
+<button style="background: #F0F8FF; border: 1px solid #ccc;" data-color="#F0F8FF" title="AliceBlue"></button>
+<button style="background: #FAEBD7; border: 1px solid #ccc;" data-color="#FAEBD7" title="AntiqueWhite"></button>
+<button style="background: #00FFFF; border: 1px solid #ccc;" data-color="#00FFFF" title="Aqua"></button>
+<button style="background: #7FFFD4; border: 1px solid #ccc;" data-color="#7FFFD4" title="Aquamarine"></button>
+<button style="background: #F0FFFF; border: 1px solid #ccc;" data-color="#F0FFFF" title="Azure"></button>
+<button style="background: #F5F5DC; border: 1px solid #ccc;" data-color="#F5F5DC" title="Beige"></button>
+<button style="background: #FFE4C4; border: 1px solid #ccc;" data-color="#FFE4C4" title="Bisque"></button>
+<button style="background: #000000; border: 1px solid #ccc;" data-color="#000000" title="Black"></button>
+<button style="background: #FFEBCD; border: 1px solid #ccc;" data-color="#FFEBCD" title="BlanchedAlmond"></button>
+<button style="background: #0000FF; border: 1px solid #ccc;" data-color="#0000FF" title="Blue"></button>
+<button style="background: #8A2BE2; border: 1px solid #ccc;" data-color="#8A2BE2" title="BlueViolet"></button>
+<button style="background: #A52A2A; border: 1px solid #ccc;" data-color="#A52A2A" title="Brown"></button>
+<button style="background: #DEB887; border: 1px solid #ccc;" data-color="#DEB887" title="Burlywood"></button>
+<button style="background: #5F9EA0; border: 1px solid #ccc;" data-color="#5F9EA0" title="CadetBlue"></button>
+<button style="background: #7FFF00; border: 1px solid #ccc;" data-color="#7FFF00" title="Chartreuse"></button>
+<button style="background: #D2691E; border: 1px solid #ccc;" data-color="#D2691E" title="Chocolate"></button>
+<button style="background: #6495ED; border: 1px solid #ccc;" data-color="#6495ED" title="CornflowerBlue"></button>
+<button style="background: #FFF8DC; border: 1px solid #ccc;" data-color="#FFF8DC" title="Cornsilk"></button>
+<button style="background: #DC143C; border: 1px solid #ccc;" data-color="#DC143C" title="Crimson"></button>
+<button style="background: #00FFFF; border: 1px solid #ccc;" data-color="#00FFFF" title="Cyan"></button>
+<button style="background: #00008B; border: 1px solid #ccc;" data-color="#00008B" title="DarkBlue"></button>
+<button style="background: #008B8B; border: 1px solid #ccc;" data-color="#008B8B" title="DarkCyan"></button>
+<button style="background: #B8860B; border: 1px solid #ccc;" data-color="#B8860B" title="DarkGoldenrod"></button>
+<button style="background: #006400; border: 1px solid #ccc;" data-color="#006400" title="DarkGreen"></button>
+<button style="background: #BDB76B; border: 1px solid #ccc;" data-color="#BDB76B" title="DarkKhaki"></button>
+<button style="background: #8B008B; border: 1px solid #ccc;" data-color="#8B008B" title="DarkMagenta"></button>
+<button style="background: #556B2F; border: 1px solid #ccc;" data-color="#556B2F" title="DarkOliveGreen"></button>
+<button style="background: #FF8C00; border: 1px solid #ccc;" data-color="#FF8C00" title="DarkOrange"></button>
+<button style="background: #9932CC; border: 1px solid #ccc;" data-color="#9932CC" title="DarkOrchid"></button>
+<button style="background: #8B0000; border: 1px solid #ccc;" data-color="#8B0000" title="DarkRed"></button>
+<button style="background: #E9967A; border: 1px solid #ccc;" data-color="#E9967A" title="DarkSalmon"></button>
+<button style="background: #8FBC8F; border: 1px solid #ccc;" data-color="#8FBC8F" title="DarkSeaGreen"></button>
+<button style="background: #483D8B; border: 1px solid #ccc;" data-color="#483D8B" title="DarkSlateBlue"></button>
+<button style="background: #2F4F4F; border: 1px solid #ccc;" data-color="#2F4F4F" title="DarkSlateGray"></button>
+<button style="background: #00CED1; border: 1px solid #ccc;" data-color="#00CED1" title="DarkTurquoise"></button>
+<button style="background: #9400D3; border: 1px solid #ccc;" data-color="#9400D3" title="DarkViolet"></button>
+<button style="background: #FF1493; border: 1px solid #ccc;" data-color="#FF1493" title="DeepPink"></button>
+<button style="background: #00BFFF; border: 1px solid #ccc;" data-color="#00BFFF" title="DeepSkyBlue"></button>
+<button style="background: #696969; border: 1px solid #ccc;" data-color="#696969" title="DimGray"></button>
+<button style="background: #1E90FF; border: 1px solid #ccc;" data-color="#1E90FF" title="DodgerBlue"></button>
+<button style="background: #B22222; border: 1px solid #ccc;" data-color="#B22222" title="Firebrick"></button>
+<button style="background: #FFFAF0; border: 1px solid #ccc;" data-color="#FFFAF0" title="FloralWhite"></button>
+<button style="background: #228B22; border: 1px solid #ccc;" data-color="#228B22" title="ForestGreen"></button>
+<button style="background: #FF00FF; border: 1px solid #ccc;" data-color="#FF00FF" title="Fuchsia"></button>
+<button style="background: #DCDCDC; border: 1px solid #ccc;" data-color="#DCDCDC" title="Gainsboro"></button>
+<button style="background: #F8F8FF; border: 1px solid #ccc;" data-color="#F8F8FF" title="GhostWhite"></button>
+<button style="background: #FFD700; border: 1px solid #ccc;" data-color="#FFD700" title="Gold"></button>
+<button style="background: #DAA520; border: 1px solid #ccc;" data-color="#DAA520" title="Goldenrod"></button>
+<button style="background: #808080; border: 1px solid #ccc;" data-color="#808080" title="Gray"></button>
+<button style="background: #008000; border: 1px solid #ccc;" data-color="#008000" title="Green"></button>
+<button style="background: #ADFF2F; border: 1px solid #ccc;" data-color="#ADFF2F" title="GreenYellow"></button>
+<button style="background: #F0FFF0; border: 1px solid #ccc;" data-color="#F0FFF0" title="Honeydew"></button>
+<button style="background: #FF69B4; border: 1px solid #ccc;" data-color="#FF69B4" title="HotPink"></button>
+<button style="background: #CD5C5C; border: 1px solid #ccc;" data-color="#CD5C5C" title="IndianRed"></button>
+<button style="background: #4B0082; border: 1px solid #ccc;" data-color="#4B0082" title="Indigo"></button>
+<button style="background: #FFFFF0; border: 1px solid #ccc;" data-color="#FFFFF0" title="Ivory"></button>
+<button style="background: #F0E68C; border: 1px solid #ccc;" data-color="#F0E68C" title="Khaki"></button>
+<button style="background: #7CFC00; border: 1px solid #ccc;" data-color="#7CFC00" title="LawnGreen"></button>
+<button style="background: #E6E6FA; border: 1px solid #ccc;" data-color="#E6E6FA" title="Lavender"></button>
+<button style="background: #FFF0F5; border: 1px solid #ccc;" data-color="#FFF0F5" title="LavenderBlush"></button>
+<button style="background: #ADD8E6; border: 1px solid #ccc;" data-color="#ADD8E6" title="LightBlue"></button>
+<button style="background: #F08080; border: 1px solid #ccc;" data-color="#F08080" title="LightCoral"></button>
+<button style="background: #E0FFFF; border: 1px solid #ccc;" data-color="#E0FFFF" title="LightCyan"></button>
+<button style="background: #FAFAD2; border: 1px solid #ccc;" data-color="#FAFAD2" title="LightGoldenrodYellow"></button>
+<button style="background: #D3D3D3; border: 1px solid #ccc;" data-color="#D3D3D3" title="LightGray"></button>
+<button style="background: #90EE90; border: 1px solid #ccc;" data-color="#90EE90" title="LightGreen"></button>
+<button style="background: #FFB6C1; border: 1px solid #ccc;" data-color="#FFB6C1" title="LightPink"></button>
+<button style="background: #FFA07A; border: 1px solid #ccc;" data-color="#FFA07A" title="LightSalmon"></button>
+<button style="background: #20B2AA; border: 1px solid #ccc;" data-color="#20B2AA" title="LightSeaGreen"></button>
+<button style="background: #87CEFA; border: 1px solid #ccc;" data-color="#87CEFA" title="LightSkyBlue"></button>
+<button style="background: #778899; border: 1px solid #ccc;" data-color="#778899" title="LightSlateGray"></button>
+<button style="background: #B0C4DE; border: 1px solid #ccc;" data-color="#B0C4DE" title="LightSteelBlue"></button>
+<button style="background: #FFFFE0; border: 1px solid #ccc;" data-color="#FFFFE0" title="LightYellow"></button>
+<button style="background: #00FF00; border: 1px solid #ccc;" data-color="#00FF00" title="Lime"></button>
+<button style="background: #32CD32; border: 1px solid #ccc;" data-color="#32CD32" title="LimeGreen"></button>
+<button style="background: #FF00FF; border: 1px solid #ccc;" data-color="#FF00FF" title="Magenta"></button>
+<button style="background: #800000; border: 1px solid #ccc;" data-color="#800000" title="Maroon"></button>
+<button style="background: #66CDAA; border: 1px solid #ccc;" data-color="#66CDAA" title="MediumAquamarine"></button>
+<button style="background: #0000CD; border: 1px solid #ccc;" data-color="#0000CD" title="MediumBlue"></button>
+<button style="background: #BA55D3; border: 1px solid #ccc;" data-color="#BA55D3" title="MediumOrchid"></button>
+<button style="background: #9370DB; border: 1px solid #ccc;" data-color="#9370DB" title="MediumPurple"></button>
+<button style="background: #3CB371; border: 1px solid #ccc;" data-color="#3CB371" title="MediumSeaGreen"></button>
+<button style="background: #7B68EE; border: 1px solid #ccc;" data-color="#7B68EE" title="MediumSlateBlue"></button>
+<button style="background: #00FA9A; border: 1px solid #ccc;" data-color="#00FA9A" title="MediumSpringGreen"></button>
+<button style="background: #48D1CC; border: 1px solid #ccc;" data-color="#48D1CC" title="MediumTurquoise"></button>
+<button style="background: #C71585; border: 1px solid #ccc;" data-color="#C71585" title="MediumVioletRed"></button>
+<button style="background: #191970; border: 1px solid #ccc;" data-color="#191970" title="MidnightBlue"></button>
+<button style="background: #F5FFFA; border: 1px solid #ccc;" data-color="#F5FFFA" title="MintCream"></button>
+<button style="background: #FFE4E1; border: 1px solid #ccc;" data-color="#FFE4E1" title="MistyRose"></button>
+<button style="background: #000080; border: 1px solid #ccc;" data-color="#000080" title="Navy"></button>
+<button style="background: #FDF5E6; border: 1px solid #ccc;" data-color="#FDF5E6" title="OldLace"></button>
+<button style="background: #808000; border: 1px solid #ccc;" data-color="#808000" title="Olive"></button>
+<button style="background: #6B8E23; border: 1px solid #ccc;" data-color="#6B8E23" title="OliveDrab"></button>
+<button style="background: #FFA500; border: 1px solid #ccc;" data-color="#FFA500" title="Orange"></button>
+<button style="background: #FF4500; border: 1px solid #ccc;" data-color="#FF4500" title="OrangeRed"></button>
+<button style="background: #DA70D6; border: 1px solid #ccc;" data-color="#DA70D6" title="Orchid"></button>
+<button style="background: #EEE8AA; border: 1px solid #ccc;" data-color="#EEE8AA" title="PaleGoldenrod"></button>
+<button style="background: #98FB98; border: 1px solid #ccc;" data-color="#98FB98" title="PaleGreen"></button>
+<button style="background: #AFEEEE; border: 1px solid #ccc;" data-color="#AFEEEE" title="PaleTurquoise"></button>
+<button style="background: #DB7093; border: 1px solid #ccc;" data-color="#DB7093" title="PaleVioletRed"></button>
+<button style="background: #FFEFD5; border: 1px solid #ccc;" data-color="#FFEFD5" title="PapayaWhip"></button>
+<button style="background: #FFDAB9; border: 1px solid #ccc;" data-color="#FFDAB9" title="PeachPuff"></button>
+<button style="background: #FFC0CB; border: 1px solid #ccc;" data-color="#FFC0CB" title="Pink"></button>
+<button style="background: #DDA0DD; border: 1px solid #ccc;" data-color="#DDA0DD" title="Plum"></button>
+<button style="background: #B0E0E6; border: 1px solid #ccc;" data-color="#B0E0E6" title="PowderBlue"></button>
+<button style="background: #800080; border: 1px solid #ccc;" data-color="#800080" title="Purple"></button>
+<button style="background: #FF0000; border: 1px solid #ccc;" data-color="#FF0000" title="Red"></button>
+<button style="background: #BC8F8F; border: 1px solid #ccc;" data-color="#BC8F8F" title="RosyBrown"></button>
+<button style="background: #4169E1; border: 1px solid #ccc;" data-color="#4169E1" title="RoyalBlue"></button>
+<button style="background: #FA8072; border: 1px solid #ccc;" data-color="#FA8072" title="Salmon"></button>
+<button style="background: #F4A460; border: 1px solid #ccc;" data-color="#F4A460" title="SandyBrown"></button>
+<button style="background: #2E8B57; border: 1px solid #ccc;" data-color="#2E8B57" title="SeaGreen"></button>
+<button style="background: #A0522D; border: 1px solid #ccc;" data-color="#A0522D" title="Sienna"></button>
+<button style="background: #C0C0C0; border: 1px solid #ccc;" data-color="#C0C0C0" title="Silver"></button>
+<button style="background: #87CEEB; border: 1px solid #ccc;" data-color="#87CEEB" title="SkyBlue"></button>
+<button style="background: #6A5ACD; border: 1px solid #ccc;" data-color="#6A5ACD" title="SlateBlue"></button>
+<button style="background: #708090; border: 1px solid #ccc;" data-color="#708090" title="SlateGray"></button>
+<button style="background: #FFFAFA; border: 1px solid #ccc;" data-color="#FFFAFA" title="Snow"></button>
+<button style="background: #00FF7F; border: 1px solid #ccc;" data-color="#00FF7F" title="SpringGreen"></button>
+<button style="background: #4682B4; border: 1px solid #ccc;" data-color="#4682B4" title="SteelBlue"></button>
+<button style="background: #D2B48C; border: 1px solid #ccc;" data-color="#D2B48C" title="Tan"></button>
+<button style="background: #008080; border: 1px solid #ccc;" data-color="#008080" title="Teal"></button>
+<button style="background: #D8BFD8; border: 1px solid #ccc;" data-color="#D8BFD8" title="Thistle"></button>
+<button style="background: #FF6347; border: 1px solid #ccc;" data-color="#FF6347" title="Tomato"></button>
+<button style="background: #40E0D0; border: 1px solid #ccc;" data-color="#40E0D0" title="Turquoise"></button>
+<button style="background: #EE82EE; border: 1px solid #ccc;" data-color="#EE82EE" title="Violet"></button>
+<button style="background: #F5DEB3; border: 1px solid #ccc;" data-color="#F5DEB3" title="Wheat"></button>
+<button style="background: #FFFFFF; border: 1px solid #ccc;" data-color="#FFFFFF" title="White"></button>
+<button style="background: #F5F5F5; border: 1px solid #ccc;" data-color="#F5F5F5" title="WhiteSmoke"></button>
+<button style="background: #FFFF00; border: 1px solid #ccc;" data-color="#FFFF00" title="Yellow"></button>
+<button style="background: #9ACD32; border: 1px solid #ccc;" data-color="#9ACD32" title="YellowGreen"></button>
+
+
+</div>
+
+<script>
+(() => {
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const tooltip = document.getElementById('tooltip');
+  const colorPalette = document.getElementById('colorPalette');
+  const closePalette = document.getElementById('closePalette');
+
+  const GRID_SIZE = 1000;
+  const CELL_SIZE = 10;
+  const MARGIN = 50;
+
+  const cellColors = new Map();
+  let hoverCell = null;
+  let selectedCell = null;
+
+  function drawGrid() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // pozadí včetně okrajů
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+// Vykreslení čar mezi buňkami
+ctx.strokeStyle = '#ccc'; // nebo '#000' pro černou
+ctx.lineWidth = 0.5;
+
+for (let i = 0; i <= GRID_SIZE; i++) {
+  // vertikální čáry
+  ctx.beginPath();
+  ctx.moveTo(MARGIN + i * CELL_SIZE, MARGIN);
+  ctx.lineTo(MARGIN + i * CELL_SIZE, MARGIN + GRID_SIZE * CELL_SIZE);
+  ctx.stroke();
+
+  // horizontální čáry
+  ctx.beginPath();
+  ctx.moveTo(MARGIN, MARGIN + i * CELL_SIZE);
+  ctx.lineTo(MARGIN + GRID_SIZE * CELL_SIZE, MARGIN + i * CELL_SIZE);
+  ctx.stroke();
+}
+
+    // obarvená políčka
+    for (let [key, color] of cellColors.entries()) {
+      const [x, y] = key.split(':').map(Number);
+      ctx.fillStyle = color;
+      ctx.fillRect(MARGIN + x * CELL_SIZE, MARGIN + y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+    }
+
+    // rámeček kolem mřížky
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(MARGIN, MARGIN, GRID_SIZE * CELL_SIZE, GRID_SIZE * CELL_SIZE);
+  }
+
+  function getCellFromMouse(pageX, pageY) {
+    const rect = canvas.getBoundingClientRect();
+    const scrollX = window.scrollX || window.pageXOffset;
+    const scrollY = window.scrollY || window.pageYOffset;
+
+    const canvasLeft = rect.left + scrollX;
+    const canvasTop = rect.top + scrollY;
+
+    const x = Math.floor((pageX - canvasLeft - MARGIN) / CELL_SIZE);
+    const y = Math.floor((pageY - canvasTop - MARGIN) / CELL_SIZE);
+
+    if (x < 0 || y < 0 || x >= GRID_SIZE || y >= GRID_SIZE) return null;
+    return { x, y };
+  }
+
+  // Přehled názvů barev podle hex kódu
+const colorNames = {
+  "#f0f8ff": "AliceBlue",
+  "#faebd7": "AntiqueWhite",
+  "#00ffff": "Aqua",
+  "#7fffd4": "Aquamarine",
+  "#f0ffff": "Azure",
+  "#f5f5dc": "Beige",
+  "#ffe4c4": "Bisque",
+  "#000000": "Black",
+  "#ffebcd": "BlanchedAlmond",
+  "#0000ff": "Blue",
+  "#8a2be2": "BlueViolet",
+  "#a52a2a": "Brown",
+  "#deb887": "Burlywood",
+  "#5f9ea0": "CadetBlue",
+  "#7fff00": "Chartreuse",
+  "#d2691e": "Chocolate",
+  "#6495ed": "CornflowerBlue",
+  "#fff8dc": "Cornsilk",
+  "#dc143c": "Crimson",
+  "#00008b": "DarkBlue",
+  "#008b8b": "DarkCyan",
+  "#b8860b": "DarkGoldenrod",
+  "#006400": "DarkGreen",
+  "#bdb76b": "DarkKhaki",
+  "#8b008b": "DarkMagenta",
+  "#556b2f": "DarkOliveGreen",
+  "#ff8c00": "DarkOrange",
+  "#9932cc": "DarkOrchid",
+  "#8b0000": "DarkRed",
+  "#e9967a": "DarkSalmon",
+  "#8fbc8f": "DarkSeaGreen",
+  "#483d8b": "DarkSlateBlue",
+  "#2f4f4f": "DarkSlateGray",
+  "#00ced1": "DarkTurquoise",
+  "#9400d3": "DarkViolet",
+  "#ff1493": "DeepPink",
+  "#00bfff": "DeepSkyBlue",
+  "#696969": "DimGray",
+  "#1e90ff": "DodgerBlue",
+  "#b22222": "Firebrick",
+  "#fffaf0": "FloralWhite",
+  "#228b22": "ForestGreen",
+  "#ff00ff": "Fuchsia",
+  "#dcdcdc": "Gainsboro",
+  "#f8f8ff": "GhostWhite",
+  "#ffd700": "Gold",
+  "#daa520": "Goldenrod",
+  "#808080": "Gray",
+  "#008000": "Green",
+  "#adff2f": "GreenYellow",
+  "#f0fff0": "Honeydew",
+  "#ff69b4": "HotPink",
+  "#cd5c5c": "IndianRed",
+  "#4b0082": "Indigo",
+  "#fffff0": "Ivory",
+  "#f0e68c": "Khaki",
+  "#7cfc00": "LawnGreen",
+  "#e6e6fa": "Lavender",
+  "#fff0f5": "LavenderBlush",
+  "#add8e6": "LightBlue",
+  "#f08080": "LightCoral",
+  "#e0ffff": "LightCyan",
+  "#fafad2": "LightGoldenrodYellow",
+  "#d3d3d3": "LightGray",
+  "#90ee90": "LightGreen",
+  "#ffb6c1": "LightPink",
+  "#ffa07a": "LightSalmon",
+  "#20b2aa": "LightSeaGreen",
+  "#87cefa": "LightSkyBlue",
+  "#778899": "LightSlateGray",
+  "#b0c4de": "LightSteelBlue",
+  "#ffffe0": "LightYellow",
+  "#00ff00": "Lime",
+  "#32cd32": "LimeGreen",
+  "#800000": "Maroon",
+  "#66cdaa": "MediumAquamarine",
+  "#0000cd": "MediumBlue",
+  "#ba55d3": "MediumOrchid",
+  "#9370db": "MediumPurple",
+  "#3cb371": "MediumSeaGreen",
+  "#7b68ee": "MediumSlateBlue",
+  "#00fa9a": "MediumSpringGreen",
+  "#48d1cc": "MediumTurquoise",
+  "#c71585": "MediumVioletRed",
+  "#191970": "MidnightBlue",
+  "#f5fffa": "MintCream",
+  "#ffe4e1": "MistyRose",
+  "#000080": "Navy",
+  "#fdf5e6": "OldLace",
+  "#808000": "Olive",
+  "#6b8e23": "OliveDrab",
+  "#ffa500": "Orange",
+  "#ff4500": "OrangeRed",
+  "#da70d6": "Orchid",
+  "#eee8aa": "PaleGoldenrod",
+  "#98fb98": "PaleGreen",
+  "#afeeee": "PaleTurquoise",
+  "#db7093": "PaleVioletRed",
+  "#ffefd5": "PapayaWhip",
+  "#ffdAB9": "PeachPuff",
+  "#ffc0cb": "Pink",
+  "#dda0dd": "Plum",
+  "#b0e0e6": "PowderBlue",
+  "#800080": "Purple",
+  "#ff0000": "Red",
+  "#bc8f8f": "RosyBrown",
+  "#4169e1": "RoyalBlue",
+  "#fa8072": "Salmon",
+  "#f4a460": "SandyBrown",
+  "#2e8b57": "SeaGreen",
+  "#a0522d": "Sienna",
+  "#c0c0c0": "Silver",
+  "#87ceeb": "SkyBlue",
+  "#6a5acd": "SlateBlue",
+  "#708090": "SlateGray",
+  "#ffFAFA": "Snow",
+  "#00ff7f": "SpringGreen",
+  "#4682b4": "SteelBlue",
+  "#d2b48c": "Tan",
+  "#008080": "Teal",
+  "#d8bfd8": "Thistle",
+  "#ff6347": "Tomato",
+  "#40e0d0": "Turquoise",
+  "#ee82ee": "Violet",
+  "#f5deb3": "Wheat",
+  "#ffffff": "White",
+  "#f5f5f5": "WhiteSmoke",
+  "#ffff00": "Yellow",
+  "#9acd32": "YellowGreen"
+};
+
+function updateTooltip(pageX, pageY) {
+  if (!hoverCell) {
+    tooltip.style.display = 'none';
+    return;
+  }
+
+  const x = hoverCell.x;
+  const y = hoverCell.y;
+  const key = `${x}:${y}`;
+  const hasColor = cellColors.has(key);
+  const color = cellColors.get(key);
+
+  // 💡 Získání názvu barvy podle hex kódu (případně fallback na samotný kód)
+  const colorName = colorNames?.[color?.toLowerCase()] || color;
+
+  let description = hasColor
+    ? `🎨 color: ${colorName}`
+    : '⬜ FREE';
+
+  tooltip.style.display = 'block';
+  tooltip.textContent = `${x + 1}:${y + 1} | ${description}`;
+  tooltip.style.left = (pageX + 15) + 'px';
+  tooltip.style.top = (pageY - 25) + 'px';
+}
+
+  function showColorPalette(pageX, pageY) {
+    colorPalette.style.left = pageX + 'px';
+    colorPalette.style.top = pageY + 'px';
+    colorPalette.style.display = 'grid';
+  }
+
+  function hideColorPalette() {
+    colorPalette.style.display = 'none';
+  }
+
+  // Eventy
+  canvas.addEventListener('mousemove', e => {
+    const cell = getCellFromMouse(e.pageX, e.pageY);
+    if (cell) {
+      hoverCell = cell;
+      updateTooltip(e.pageX, e.pageY);
+    } else {
+      hoverCell = null;
+      tooltip.style.display = 'none';
+    }
+  });
+
+  canvas.addEventListener('click', e => {
+    const cell = getCellFromMouse(e.pageX, e.pageY);
+    if (!cell) return;
+    selectedCell = cell;
+    showColorPalette(e.pageX, e.pageY);
+  });
+
+  colorPalette.addEventListener('click', e => {
+    if (!selectedCell) return;
+    if (e.target.tagName === 'BUTTON') {
+      const color = e.target.getAttribute('data-color');
+      const key = `${selectedCell.x}:${selectedCell.y}`;
+      cellColors.set(key, color);
+      drawGrid();
+      hideColorPalette();
+    }
+  });
+
+  document.addEventListener('click', e => {
+    if (!colorPalette.contains(e.target) && e.target !== canvas) {
+      hideColorPalette();
+    }
+  });
+
+  // Kliknutí na křížek pro zavření palety
+  closePalette.addEventListener('click', hideColorPalette);
+
+  drawGrid();
+})();
+</script>
+
+</body>
+</html>
