@@ -212,6 +212,7 @@
 </div>
 
 <script>
+  
 (() => {
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d');
@@ -227,6 +228,24 @@
   let hoverCell = null;
   let selectedCell = null;
 
+const API_URL = 'https://script.google.com/macros/s/AKfycbyMP7elbB8LmMIugbH6CLWhbDizJmvOshXlN2degKEl3DTuMKaCwuTsji2r6djPN0XAJA/exec';
+
+// Načti barvy z Google Sheets a naplň cellColors
+fetch(API_URL)
+  .then(response => response.json())
+  .then(data => {
+    cellColors.clear();
+    data.forEach(item => {
+      // X a Y v Sheets jsou 1-based, v tvé mřížce 0-based => odečteme 1
+      const key = `${item.x - 1}:${item.y - 1}`;
+      cellColors.set(key, item.color);
+    });
+    drawGrid();
+  })
+  .catch(err => {
+    console.error('Chyba při načítání dat z Google Sheets:', err);
+  });
+  
   function drawGrid() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -524,8 +543,28 @@ tooltip.style.top = `${top}px`;
       const color = e.target.getAttribute('data-color');
       const key = `${selectedCell.x}:${selectedCell.y}`;
       cellColors.set(key, color);
-      drawGrid();
-      hideColorPalette();
+drawGrid();
+hideColorPalette();
+
+fetch('https://script.google.com/macros/s/AKfycbyMP7elbB8LmMIugbH6CLWhbDizJmvOshXlN2degKEl3DTuMKaCwuTsji2r6djPN0XAJA/exec', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    x: selectedCell.x + 1,  // +1, protože Google Sheets začínají na 1
+    y: selectedCell.y + 1,
+    color: color
+  })
+})
+.then(response => response.json())
+.then(data => {
+  console.log('Barva uložena:', data);
+})
+.catch(err => {
+  console.error('Chyba při ukládání barvy do Sheets:', err);
+});
+
     }
   });
 
@@ -544,3 +583,4 @@ tooltip.style.top = `${top}px`;
 
 </body>
 </html>
+
