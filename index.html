@@ -231,7 +231,7 @@
 const API_URL = 'https://script.google.com/macros/s/AKfycbyMP7elbB8LmMIugbH6CLWhbDizJmvOshXlN2degKEl3DTuMKaCwuTsji2r6djPN0XAJA/exec';
 
 // Načti barvy z Google Sheets a naplň cellColors
-fetch(API_URL)
+fetch('https://script.google.com/macros/s/AKfycbyMP7elbB8LmMIugbH6CLWhbDizJmvOshXlN2degKEl3DTuMKaCwuTsji2r6djPN0XAJA/exec')
   .then(response => response.json())
   .then(data => {
     cellColors.clear();
@@ -590,5 +590,6 @@ fetch('https://script.google.com/macros/s/AKfycbyMP7elbB8LmMIugbH6CLWhbDizJmvOsh
 
 </body>
 </html>
+
 
 
