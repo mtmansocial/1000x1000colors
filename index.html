@@ -547,9 +547,9 @@ drawGrid();
 hideColorPalette();
 
 fetch('https://script.google.com/macros/s/AKfycbyMP7elbB8LmMIugbH6CLWhbDizJmvOshXlN2degKEl3DTuMKaCwuTsji2r6djPN0XAJA/exec', {
-   method: 'POST',
+  method: 'POST',
   headers: {
-    'Content-Type': 'text/plain;charset=utf-8' // 👈 změna!
+    'Content-Type': 'text/plain;charset=utf-8' // 👈 CORS fix
   },
   body: JSON.stringify({
     x: selectedCell.x + 1,
@@ -564,16 +564,6 @@ fetch('https://script.google.com/macros/s/AKfycbyMP7elbB8LmMIugbH6CLWhbDizJmvOsh
 .catch(err => {
   console.error('❌ Chyba při ukládání barvy do Sheets:', err);
 });
-.then(response => response.json())
-.then(data => {
-  console.log('Barva uložena:', data);
-})
-.catch(err => {
-  console.error('Chyba při ukládání barvy do Sheets:', err);
-});
-
-    }
-  });
 
   document.addEventListener('click', e => {
     if (!colorPalette.contains(e.target) && e.target !== canvas) {
@@ -590,6 +580,7 @@ fetch('https://script.google.com/macros/s/AKfycbyMP7elbB8LmMIugbH6CLWhbDizJmvOsh
 
 </body>
 </html>
+
 
 
 
