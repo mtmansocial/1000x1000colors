@@ -1,3 +1,49 @@
+Conversation opened. 2 messages. 2 messages unread.
+
+Skip to content
+Using Gmail with screen readers
+Enable desktop notifications for Gmail.
+   OK  No thanks
+1 of 18
+v3
+Inbox
+
+Toman, Marek <Marek.Toman@skanska.cz>
+Attachments
+11:37 AM (4 minutes ago)
+to me
+
+General / Obecné
+
+
+ 
+
+ One attachment
+  •  Scanned by Gmail
+
+Toman, Marek <Marek.Toman@skanska.cz>
+Attachments
+11:42 AM (0 minutes ago)
+to me
+
+General / Obecné
+
+
+ 
+
+ 
+
+From: Toman, Marek
+Sent: Thursday, September 4, 2025 11:38 AM
+To: mtmansocial@gmail.com
+Subject: v3
+
+ 
+
+ 
+
+ One attachment
+  •  Scanned by Gmail
 <!DOCTYPE html>
 <html lang="cs">
 <head>
@@ -74,7 +120,7 @@
 
 <div id="colorPalette">
 
-  <span id="closePalette" title="Zavřít">×</span>
+  <span id="closePalette" title="Close">×</span>
 
 <button style="background: #F0F8FF; border: 1px solid #ccc;" data-color="#F0F8FF" title="AliceBlue"></button>
 <button style="background: #FAEBD7; border: 1px solid #ccc;" data-color="#FAEBD7" title="AntiqueWhite"></button>
@@ -432,17 +478,68 @@ function updateTooltip(pageX, pageY) {
     ? `🎨 color: ${colorName}`
     : '⬜ FREE';
 
-  tooltip.style.display = 'block';
   tooltip.textContent = `${x + 1}:${y + 1} | ${description}`;
-  tooltip.style.left = (pageX + 15) + 'px';
-  tooltip.style.top = (pageY - 25) + 'px';
+tooltip.style.display = 'block';
+
+// Nejdřív tooltip umístíme někam, abychom změřili jeho rozměry
+tooltip.style.left = '0px';
+tooltip.style.top = '0px';
+
+const tooltipWidth = tooltip.offsetWidth;
+const tooltipHeight = tooltip.offsetHeight;
+
+let left = pageX + 15;
+let top = pageY - 25;
+
+// Okraje s přihlédnutím k posunu stránky
+const maxRight = window.scrollX + window.innerWidth;
+const maxBottom = window.scrollY + window.innerHeight;
+
+// Pokud by tooltip vyjel mimo pravý okraj
+if (left + tooltipWidth > maxRight) {
+  left = maxRight - tooltipWidth - 10;
 }
 
-  function showColorPalette(pageX, pageY) {
-    colorPalette.style.left = pageX + 'px';
-    colorPalette.style.top = pageY + 'px';
-    colorPalette.style.display = 'grid';
+// Pokud by tooltip vyjel mimo horní okraj
+if (top < window.scrollY) {
+  top = window.scrollY + 10;
+}
+
+tooltip.style.left = `${left}px`;
+tooltip.style.top = `${top}px`;
+}
+
+ function showColorPalette(pageX, pageY) {
+  // Dočasně zobrazíme paletu, abychom mohli změřit její velikost
+  colorPalette.style.display = 'grid';
+  colorPalette.style.left = '0px';
+  colorPalette.style.top = '0px';
+
+  const paletteRect = colorPalette.getBoundingClientRect();
+  const paletteWidth = paletteRect.width;
+  const paletteHeight = paletteRect.height;
+
+  // Maximální souřadnice včetně scrollu (celá stránka, ne jen okno)
+  const maxLeft = window.scrollX + window.innerWidth;
+  const maxTop = window.scrollY + window.innerHeight;
+
+  let left = pageX;
+  let top = pageY;
+
+  // Pokud by paleta přesáhla pravý okraj
+  if (left + paletteWidth > maxLeft) {
+    left = maxLeft - paletteWidth - 10;
   }
+
+  // Pokud by paleta přesáhla spodní okraj
+  if (top + paletteHeight > maxTop) {
+    top = maxTop - paletteHeight - 10;
+  }
+
+  // Nastav pozici v absolutních souřadnicích stránky
+  colorPalette.style.left = `${left}px`;
+  colorPalette.style.top = `${top}px`;
+}
 
   function hideColorPalette() {
     colorPalette.style.display = 'none';
@@ -461,11 +558,11 @@ function updateTooltip(pageX, pageY) {
   });
 
   canvas.addEventListener('click', e => {
-    const cell = getCellFromMouse(e.pageX, e.pageY);
-    if (!cell) return;
-    selectedCell = cell;
-    showColorPalette(e.pageX, e.pageY);
-  });
+  const cell = getCellFromMouse(e.pageX, e.pageY);
+  if (!cell) return;
+  selectedCell = cell;
+  showColorPalette(e.pageX, e.pageY); // ← správně
+});
 
   colorPalette.addEventListener('click', e => {
     if (!selectedCell) return;
@@ -493,3 +590,5 @@ function updateTooltip(pageX, pageY) {
 
 </body>
 </html>
+index.html
+Displaying index.html.
