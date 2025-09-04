@@ -547,16 +547,23 @@ drawGrid();
 hideColorPalette();
 
 fetch('https://script.google.com/macros/s/AKfycbyMP7elbB8LmMIugbH6CLWhbDizJmvOshXlN2degKEl3DTuMKaCwuTsji2r6djPN0XAJA/exec', {
-  method: 'POST',
+   method: 'POST',
   headers: {
-    'Content-Type': 'application/json',
+    'Content-Type': 'text/plain;charset=utf-8' // 👈 změna!
   },
   body: JSON.stringify({
-    x: selectedCell.x + 1,  // +1, protože Google Sheets začínají na 1
+    x: selectedCell.x + 1,
     y: selectedCell.y + 1,
     color: color
   })
 })
+.then(response => response.json())
+.then(data => {
+  console.log('✅ Barva uložena:', data);
+})
+.catch(err => {
+  console.error('❌ Chyba při ukládání barvy do Sheets:', err);
+});
 .then(response => response.json())
 .then(data => {
   console.log('Barva uložena:', data);
@@ -583,4 +590,5 @@ fetch('https://script.google.com/macros/s/AKfycbyMP7elbB8LmMIugbH6CLWhbDizJmvOsh
 
 </body>
 </html>
+
 
