@@ -538,38 +538,34 @@ tooltip.style.top = `${top}px`;
 });
 
   colorPalette.addEventListener('click', e => {
-    if (!selectedCell) return;
-    if (e.target.tagName === 'BUTTON') {
-      const color = e.target.getAttribute('data-color');
-      const key = `${selectedCell.x}:${selectedCell.y}`;
-      cellColors.set(key, color);
-drawGrid();
-hideColorPalette();
+  if (!selectedCell) return;
+  if (e.target.tagName === 'BUTTON') {
+    const color = e.target.getAttribute('data-color');
+    const key = `${selectedCell.x}:${selectedCell.y}`;
+    cellColors.set(key, color);
+    drawGrid();
+    hideColorPalette();
 
-fetch('https://script.google.com/macros/s/AKfycbyMP7elbB8LmMIugbH6CLWhbDizJmvOshXlN2degKEl3DTuMKaCwuTsji2r6djPN0XAJA/exec', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'text/plain;charset=utf-8' // 👈 CORS fix
-  },
-  body: JSON.stringify({
-    x: selectedCell.x + 1,
-    y: selectedCell.y + 1,
-    color: color
-  })
-})
-.then(response => response.json())
-.then(data => {
-  console.log('✅ Barva uložena:', data);
-})
-.catch(err => {
-  console.error('❌ Chyba při ukládání barvy do Sheets:', err);
+    fetch('https://script.google.com/macros/s/AKfycbyMP7elbB8LmMIugbH6CLWhbDizJmvOshXlN2degKEl3DTuMKaCwuTsji2r6djPN0XAJA/exec', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8'
+      },
+      body: JSON.stringify({
+        x: selectedCell.x + 1,
+        y: selectedCell.y + 1,
+        color: color
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log('✅ Barva uložena:', data);
+    })
+    .catch(err => {
+      console.error('❌ Chyba při ukládání barvy do Sheets:', err);
+    });
+  }
 });
-
-  document.addEventListener('click', e => {
-    if (!colorPalette.contains(e.target) && e.target !== canvas) {
-      hideColorPalette();
-    }
-  });
 
   // Kliknutí na křížek pro zavření palety
   closePalette.addEventListener('click', hideColorPalette);
@@ -580,6 +576,7 @@ fetch('https://script.google.com/macros/s/AKfycbyMP7elbB8LmMIugbH6CLWhbDizJmvOsh
 
 </body>
 </html>
+
 
 
 
