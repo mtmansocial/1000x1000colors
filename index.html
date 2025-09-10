@@ -227,6 +227,28 @@
   let hoverCell = null;
   let selectedCell = null;
 
+  // Načtení barev z externího JSON
+async function loadColorsFromJSON(url) {
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+
+    for (const [key, color] of Object.entries(data)) {
+      let [x, y] = key.split(':').map(Number);
+
+      // Posun o -1, aby 1:1 z JSONu odpovídalo 0:0 v canvasu
+      x = x - 1;
+      y = y - 1;
+
+      if (x >= 0 && y >= 0) {
+        cellColors.set(`${x}:${y}`, color);
+      }
+    }
+  } catch (err) {
+    console.error("Chyba při načítání JSON:", err);
+  }
+}
+
   function drawGrid() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -538,9 +560,12 @@ tooltip.style.top = `${top}px`;
   // Kliknutí na křížek pro zavření palety
   closePalette.addEventListener('click', hideColorPalette);
 
-  drawGrid();
+// Načteme barvy z externího JSON a pak vykreslíme mřížku
+await loadColorsFromJSON("https://mtmansocial.github.io/colors/colors.json");
+drawGrid();
 })();
 </script>
 
 </body>
 </html>
+
