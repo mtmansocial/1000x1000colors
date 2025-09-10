@@ -212,7 +212,6 @@
 </div>
 
 <script>
-  
 (() => {
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d');
@@ -228,24 +227,6 @@
   let hoverCell = null;
   let selectedCell = null;
 
-const API_URL = 'https://script.google.com/macros/s/AKfycbyMP7elbB8LmMIugbH6CLWhbDizJmvOshXlN2degKEl3DTuMKaCwuTsji2r6djPN0XAJA/exec';
-
-// Načti barvy z Google Sheets a naplň cellColors
-fetch('https://script.google.com/macros/s/AKfycbyMP7elbB8LmMIugbH6CLWhbDizJmvOshXlN2degKEl3DTuMKaCwuTsji2r6djPN0XAJA/exec')
-  .then(response => response.json())
-  .then(data => {
-    cellColors.clear();
-    data.forEach(item => {
-      // X a Y v Sheets jsou 1-based, v tvé mřížce 0-based => odečteme 1
-      const key = `${item.x - 1}:${item.y - 1}`;
-      cellColors.set(key, item.color);
-    });
-    drawGrid();
-  })
-  .catch(err => {
-    console.error('Chyba při načítání dat z Google Sheets:', err);
-  });
-  
   function drawGrid() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -538,34 +519,21 @@ tooltip.style.top = `${top}px`;
 });
 
   colorPalette.addEventListener('click', e => {
-  if (!selectedCell) return;
-  if (e.target.tagName === 'BUTTON') {
-    const color = e.target.getAttribute('data-color');
-    const key = `${selectedCell.x}:${selectedCell.y}`;
-    cellColors.set(key, color);
-    drawGrid();
-    hideColorPalette();
+    if (!selectedCell) return;
+    if (e.target.tagName === 'BUTTON') {
+      const color = e.target.getAttribute('data-color');
+      const key = `${selectedCell.x}:${selectedCell.y}`;
+      cellColors.set(key, color);
+      drawGrid();
+      hideColorPalette();
+    }
+  });
 
-    fetch('https://script.google.com/macros/s/AKfycbwenvBYBE-UkZvf53-_h8ixnZspKkXsHCcRGZkHpvE-2FM7IJg4wVE01Zou2bnaY5UfjA/exec', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'text/plain;charset=utf-8'
-      },
-      body: JSON.stringify({
-        x: selectedCell.x + 1,
-        y: selectedCell.y + 1,
-        color: color
-      })
-    })
-    .then(response => response.json())
-    .then(data => {
-      console.log('✅ Barva uložena:', data);
-    })
-    .catch(err => {
-      console.error('❌ Chyba při ukládání barvy do Sheets:', err);
-    });
-  }
-});
+  document.addEventListener('click', e => {
+    if (!colorPalette.contains(e.target) && e.target !== canvas) {
+      hideColorPalette();
+    }
+  });
 
   // Kliknutí na křížek pro zavření palety
   closePalette.addEventListener('click', hideColorPalette);
@@ -576,12 +544,3 @@ tooltip.style.top = `${top}px`;
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
