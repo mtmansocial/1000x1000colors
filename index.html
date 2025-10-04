@@ -65,6 +65,43 @@
     #closePalette:hover {
       color: #000;
     }
+
+#infoIcon {
+    position: absolute;
+    top: 15px;
+    left: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    z-index: 1002;
+  }
+  #infoTooltip {
+    position: absolute;
+    display: none;
+    background: rgba(0,0,0,0.8);
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    pointer-events: none;
+    z-index: 1003;
+    max-width: 200px;
+  }
+
+/* Buy Me a Coffee odkaz */
+#buyCoffee {
+  position: absolute;
+  top: 17px;          
+  left: 260px;        
+  font-size: 16px;
+  text-decoration: none;
+  color: #008000;     /* barva odkazu, lze změnit */
+  font-weight: bold;
+  z-index: 1002;
+}
+#buyCoffee:hover {
+  text-decoration: underline;
+}
+
   </style>
 </head>
 <body>
@@ -208,6 +245,12 @@
 
 
 </div>
+
+<!-- Info ikona a tooltip -->
+<div id="infoIcon">ℹ️</div>
+<!-- Buy me a coffee odkaz -->
+<a id="buyCoffee" href="https://buymeacoffee.com/mtman" target="_blank">  Buy a cell  </a>
+<div id="infoTooltip"></div>
 
 <script>
 (async () => {
@@ -561,12 +604,41 @@ tooltip.style.top = `${top}px`;
 // Načteme barvy z externího JSON a pak vykreslíme mřížku
 await loadColorsFromJSON("https://mtmansocial.github.io/colors/colors.json");
 drawGrid();
+
+// KROK 3: Info ikona
+  const infoIcon = document.getElementById('infoIcon');
+  const infoTooltip = document.getElementById('infoTooltip');
+
+  infoIcon.addEventListener('mouseenter', (e) => {
+  infoTooltip.innerHTML = 
+    "Welcome to the 1000x1000Block web.<br>" +
+    "This page is a canvas where you can fill cells with colors.<br>" +
+    "Hover over a cell to see if it is filled or free.<br>" +
+    "If a cell is free, click on it and a palette will appear.<br>" +
+    "Now you can choose your own color.<br>" +
+    "If you want to purchase and save a cell, please use the link on the right.<br>" +
+    "1 cell = 1 dollar or euro.<br>" +
+    "When paying, include the cell coordinates and color in the note.";
+  infoTooltip.style.display = 'block';
+  infoTooltip.style.left = (e.pageX + 10) + 'px';
+  infoTooltip.style.top = (e.pageY + 10) + 'px';
+});
+
+  infoIcon.addEventListener('mousemove', (e) => {
+    infoTooltip.style.left = (e.pageX + 10) + 'px';
+    infoTooltip.style.top = (e.pageY + 10) + 'px';
+  });
+
+  infoIcon.addEventListener('mouseleave', () => {
+    infoTooltip.style.display = 'none';
+  });
+
+
 })();
 </script>
 
 </body>
 </html>
-
 
 
 
